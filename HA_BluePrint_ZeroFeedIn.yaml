@@ -1,6 +1,7 @@
 blueprint:
   name: Control PV Limit to avoid exporting to the grid
   description: "# Zero Feed In Automation
+    
     **Version: 0.0.5**
 
     # Summary This automation will react on changes of energy imported or exported
