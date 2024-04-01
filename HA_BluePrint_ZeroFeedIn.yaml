@@ -1,7 +1,7 @@
 blueprint:
   name: Control PV Limit to avoid exporting to the grid
   description: "# Zero Feed In Automation
-    
+
     **Version: 0.0.5**
 
     # Summary This automation will react on changes of energy imported or exported
@@ -179,12 +179,6 @@ variables:
     {{ [((pvchannel1generation - pvchannel2generation) | abs), gridsum] | min * 2 | round }}
     {%- endif %}"
   inverteronline: !input InverterOnlineStatus
-  # new_setpoint: '{% set setpoint = gridsum + modifier_setpoint|float(0) + states(currentlimit)|float(0)
-  #   -5 %}{% if setpoint > upperlimit -%}{% set setpoint = upperlimit %}{% elif setpoint
-  #   < lowerlimit %}{% set setpoint = lowerlimit %}{%- endif %}{{setpoint}}'
-  # new_setpoint_mode2: '{% set setpoint = gridsum + modifier_setpoint|float(0) + pvgeneration
-  #   + 5 %}{% if setpoint > upperlimit -%}{% set setpoint = upperlimit %}{% elif setpoint
-  #   < lowerlimit %}{% set setpoint = lowerlimit %}{%- endif %}{{setpoint}}'
   new_setpoint: "
     {% if gridmaxpoint > 0 and gridsum >= gridmaxpoint -%}
     {% set setpoint = upperlimit %}
@@ -205,10 +199,9 @@ condition:
   - condition: template
     value_template: '{{ states(inverteronline) == "on"}}'
   - condition: template
-    value_template:
-      "{%- set last = state_attr(this.entity_id, 'last_triggered') %}
-      {{ last is not none and now() - last > timedelta(seconds=triggerinterval) }}
-      "
+    value_template: |
+      {%- set last = state_attr(this.entity_id, 'last_triggered') %}
+      {{ last is none or (last is not none and (now() - last) > timedelta(seconds=triggerinterval)) }}
   - condition: template
     value_template: "{{(new_setpoint - states(currentlimit)|float(0))|abs > 5}}"
 action:
