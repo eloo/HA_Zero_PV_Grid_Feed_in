@@ -1,6 +1,7 @@
 blueprint:
   name: Control PV Limit to avoid exporting to the grid
-  description: '# Zero Feed In Automation **Version: 0.0.5**
+  description: "# Zero Feed In Automation  
+    **Version: 0.0.5**
 
     # Summary This automation will react on changes of energy imported or exported
     from the grid. It will control the Photovoltaic power generation by setting the
@@ -18,7 +19,7 @@ blueprint:
     It should be the non persistant limit to avoid too many writes towards the flash
     memory.
 
-    <u>InverterOnlineStatus</u> Entity indicating if the inverter is available (''On''
+    <u>InverterOnlineStatus</u> Entity indicating if the inverter is available ('On'
     -> available)
 
 
@@ -26,12 +27,13 @@ blueprint:
 
     # Change log Check the github repository: https://github.com/AndreBott83/HA_Zero_PV_Grid_Feed_in
 
-    '
+    "
   domain: automation
   input:
     TriggerInterval:
       name: Interval trigger
-      description: Interval of which the automation will be triggered and a limit
+      description:
+        Interval of which the automation will be triggered and a limit
         could be set in seconds
       default: 15
       selector:
@@ -65,7 +67,8 @@ blueprint:
           step: 1.0
     AllowedFeedIn:
       name: Number in W of grid feed that is accepted
-      description: Limitation of PV Generation will only be active if Number in W
+      description:
+        Limitation of PV Generation will only be active if Number in W
         of grid feed that is higher than this number
       default: 0
       selector:
@@ -88,8 +91,9 @@ blueprint:
           step: 1.0
     ModeSelector:
       name: Select Controll ModeSelector
-      description: 'Mode 1: smooth decrease of allowed generation. Mode 2: Hard Cut
-        to zero feed in'
+      description:
+        "Mode 1: smooth decrease of allowed generation. Mode 2: Hard Cut
+        to zero feed in"
       default: 1
       selector:
         number:
@@ -99,12 +103,13 @@ blueprint:
           mode: slider
     GridPowerMeters:
       name: Sensors measuring Grid import or export e.g. all 3 phases in W
-      description: All power meters will be summed up to define the total grid import
+      description:
+        All power meters will be summed up to define the total grid import
         or export. Choose e.g. all 3 sensors measuring L1, L2 & L3 in W
       selector:
         entity:
           device_class:
-          - power
+            - power
           multiple: true
     PVPowerMeters:
       name: Sensors measuring PV Generation in W
@@ -112,7 +117,7 @@ blueprint:
       selector:
         entity:
           device_class:
-          - power
+            - power
           multiple: true
     PVChannel1PowerMeter:
       name: Sensors measuring PV Generation for Channel 1 in W
@@ -121,7 +126,7 @@ blueprint:
       selector:
         entity:
           device_class:
-          - power
+            - power
     PVChannel2PowerMeter:
       name: Sensors measuring PV Generation for Channel 2 in W
       description: Choose the sensors showing the current produced PV Power for channel 2
@@ -129,7 +134,7 @@ blueprint:
       selector:
         entity:
           device_class:
-          - power
+            - power
     NonPersistantLimit:
       name: Entity to set the non persistant absolut limit in W
       description: Choose the entity to define the limit of PV generation in W
@@ -152,19 +157,23 @@ variables:
   PVChannel2PowerMetersvar: !input PVChannel2PowerMeter
   GridPowerMetersvar: !input GridPowerMeters
   ctlr_mode: !input ModeSelector
-  pvgeneration: '{% set pvgeneration = expand(PVPowerMetersvar) | map(attribute=''state'')
-    |map(''float'',default=0) | sum %} {{pvgeneration}}'
-  pvchannel1generation: '{% set pvchannel1generation = expand(PVChannel1PowerMetersvar) | map(attribute=''state'')
-    |map(''float'',default=0) | sum %} {{pvchannel1generation}}'
-  pvchannel2generation: '{% set pvchannel2generation = expand(PVChannel2PowerMetersvar) | map(attribute=''state'')
-    |map(''float'',default=0) | sum %} {{pvchannel2generation}}'
-  gridsum: '{% set gridconsumption = expand(GridPowerMetersvar) | map(attribute=''state'')
-    |map(''float'',default=0) | sum %} {{gridconsumption}}'
+  pvgeneration:
+    "{% set pvgeneration = expand(PVPowerMetersvar) | map(attribute='state')
+    |map('float',default=0) | sum %} {{pvgeneration}}"
+  pvchannel1generation:
+    "{% set pvchannel1generation = expand(PVChannel1PowerMetersvar) | map(attribute='state')
+    |map('float',default=0) | sum %} {{pvchannel1generation}}"
+  pvchannel2generation:
+    "{% set pvchannel2generation = expand(PVChannel2PowerMetersvar) | map(attribute='state')
+    |map('float',default=0) | sum %} {{pvchannel2generation}}"
+  gridsum:
+    "{% set gridconsumption = expand(GridPowerMetersvar) | map(attribute='state')
+    |map('float',default=0) | sum %} {{gridconsumption}}"
   modifier: !input AllowedFeedIn
-  modifier_setpoint: '{% if gridsum < 0 -%}{{modifier}} 
-    {% else -%} 
+  modifier_setpoint: "{% if gridsum < 0 -%}{{modifier}}
+    {% else -%}
     {{ [((pvchannel1generation - pvchannel2generation) | abs), gridsum] | min * 2 | round }}
-    {%- endif %}'
+    {%- endif %}"
   inverteronline: !input InverterOnlineStatus
   # new_setpoint: '{% set setpoint = gridsum + modifier_setpoint|float(0) + states(currentlimit)|float(0)
   #   -5 %}{% if setpoint > upperlimit -%}{% set setpoint = upperlimit %}{% elif setpoint
@@ -172,40 +181,42 @@ variables:
   # new_setpoint_mode2: '{% set setpoint = gridsum + modifier_setpoint|float(0) + pvgeneration
   #   + 5 %}{% if setpoint > upperlimit -%}{% set setpoint = upperlimit %}{% elif setpoint
   #   < lowerlimit %}{% set setpoint = lowerlimit %}{%- endif %}{{setpoint}}'
-  new_setpoint: '
+  new_setpoint: "
     {% if gridmaxpoint > 0 and gridsum >= gridmaxpoint -%}
-      {% set setpoint = upperlimit %}
-    {% elif ctlr_mode == 1 -%} 
-      {% set setpoint = gridsum + modifier_setpoint|float(0) + states(currentlimit)|float(0)
-      -5 %}{% if setpoint > upperlimit -%}{% set setpoint = upperlimit %}{% elif setpoint
-      < lowerlimit %}{% set setpoint = lowerlimit %}{%- endif %}
-    {% elif ctlr_mode == 2 -%} 
-      {% set setpoint = gridsum + modifier_setpoint|float(0) + pvgeneration
-      + 5 %}{% if setpoint > upperlimit -%}{% set setpoint = upperlimit %}{% elif setpoint
-      < lowerlimit %}{% set setpoint = lowerlimit %}{%- endif %}
+    {% set setpoint = upperlimit %}
+    {% elif ctlr_mode == 1 -%}
+    {% set setpoint = gridsum + modifier_setpoint|float(0) + states(currentlimit)|float(0)
+    -5 %}{% if setpoint > upperlimit -%}{% set setpoint = upperlimit %}{% elif setpoint
+    < lowerlimit %}{% set setpoint = lowerlimit %}{%- endif %}
+    {% elif ctlr_mode == 2 -%}
+    {% set setpoint = gridsum + modifier_setpoint|float(0) + pvgeneration
+    + 5 %}{% if setpoint > upperlimit -%}{% set setpoint = upperlimit %}{% elif setpoint
+    < lowerlimit %}{% set setpoint = lowerlimit %}{%- endif %}
     {%- endif %}
-    {{setpoint | round(0) }}'
+    {{setpoint | round(0) }}"
 trigger:
-- platform: state
-  entity_id: !input GridPowerMeters
+  - platform: state
+    entity_id: !input GridPowerMeters
 condition:
-- condition: template
-  value_template: '{{ states(inverteronline) == "on"}}'
-- condition: template
-  value_template: '{%- set last = state_attr(this.entity_id, ''last_triggered'') %}
-    {{ last is not none and now() - last > timedelta(seconds=triggerinterval) }}
-    '
-- condition: template
-  value_template: '{{(new_setpoint - states(currentlimit)|float(0))|abs > 5}}'
+  - condition: template
+    value_template: '{{ states(inverteronline) == "on"}}'
+  - condition: template
+    value_template:
+      "{%- set last = state_attr(this.entity_id, 'last_triggered') %}
+      {{ last is not none and now() - last > timedelta(seconds=triggerinterval) }}
+      "
+  - condition: template
+    value_template: "{{(new_setpoint - states(currentlimit)|float(0))|abs > 5}}"
 action:
-- service: logbook.log
-  data_template:
-    name: 'PVSetpoint:'
-    message: 'Gridsum: {{gridsum}} W & PVGeneration: {{pvgeneration}} W -> new_setpoint:
-      {{new_setpoint}} W'
-- service: number.set_value
-  target:
-    entity_id: !input NonPersistantLimit
-  data:
-    value: '{{new_setpoint | round(0)}}'
+  - service: logbook.log
+    data_template:
+      name: "PVSetpoint:"
+      message:
+        "Gridsum: {{gridsum}} W & PVGeneration: {{pvgeneration}} W -> new_setpoint:
+        {{new_setpoint}} W"
+  - service: number.set_value
+    target:
+      entity_id: !input NonPersistantLimit
+    data:
+      value: "{{new_setpoint | round(0)}}"
 mode: single
