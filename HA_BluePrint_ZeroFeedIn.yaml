@@ -1,6 +1,6 @@
 blueprint:
   name: Control PV Limit to avoid exporting to the grid
-  description: "# Zero Feed In Automation  
+  description: "# Zero Feed In Automation
     **Version: 0.0.5**
 
     # Summary This automation will react on changes of energy imported or exported
@@ -9,18 +9,21 @@ blueprint:
 
     ## Required sensors / entities
 
-    <u>GridPowerMeters:</u> Sensors measuring Grid import or export e.g. all 3 phases
+    <u>GridPowerMeters:</u>
+    Sensors measuring Grid import or export e.g. all 3 phases
     in W. All power meters will be summed up to define the total grid import or export.
 
-    <u>PVPowerMeters:</u> Sensors measuring PV Generation in W If sevaral Sensors
+    <u>PVPowerMeters:</u>
+    Sensors measuring PV Generation in W If sevaral Sensors
     are selected, those will be summed up.
 
-    <u>NonPersistantLimit</u>: Entity to set the non persistant absolut limit in W.
+    <u>NonPersistantLimit:</u>
+    Entity to set the non persistant absolut limit in W.
     It should be the non persistant limit to avoid too many writes towards the flash
     memory.
 
-    <u>InverterOnlineStatus</u> Entity indicating if the inverter is available ('On'
-    -> available)
+    <u>InverterOnlineStatus:</u>
+    Entity indicating if the inverter is available ('On' -> available)
 
 
     Kudos for the simple algorithm and idea go to: https://selbstbau-pv.de/wissensbasis/nulleinspeisung-hoymiles-hm-1500-mit-opendtu-python-steuerung/
